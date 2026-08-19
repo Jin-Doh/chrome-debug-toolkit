@@ -89,7 +89,9 @@ func Start(url string) (*Session, error) {
 	}
 	session.PID = result.PID
 	if err := writeSession(session); err != nil {
-		_ = syscall.Kill(session.PID, syscall.SIGTERM)
+		if process, findErr := os.FindProcess(session.PID); findErr == nil {
+			_ = process.Kill()
+		}
 		_ = os.RemoveAll(sessionDir)
 		return nil, err
 	}

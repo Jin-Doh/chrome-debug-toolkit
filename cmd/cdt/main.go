@@ -13,7 +13,7 @@ import (
 	"github.com/jin-doh/chrome-debug-toolkit/internal/report"
 )
 
-const version = "0.1.0"
+var version = "dev"
 
 func main() {
 	if err := execute(os.Args[1:]); err != nil {

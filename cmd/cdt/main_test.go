@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/jin-doh/chrome-debug-toolkit/internal/chrome"
@@ -126,7 +125,7 @@ func TestRunInspectReadsDirectFile(t *testing.T) {
 
 func TestUsageAndVersionRemainAvailable(t *testing.T) {
 	printUsage()
-	if version == "" || !strings.Contains(version, ".") {
+	if version == "" {
 		t.Fatalf("invalid version: %q", version)
 	}
 }
