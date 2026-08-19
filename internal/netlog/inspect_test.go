@@ -121,3 +121,17 @@ func TestInspectRejectsMalformedSessionMetadata(t *testing.T) {
 		t.Fatal("Inspect accepted malformed session metadata")
 	}
 }
+func TestInspectIgnoresNonNumericNetError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "non-numeric-error.json")
+	data := `{"constants":{"logEventTypes":{"ONE":1}},"events":[{"type":1,"params":{"net_error":"not-a-number"}}]}`
+	if err := os.WriteFile(path, []byte(data), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	summary, err := Inspect(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if summary.TotalEvents != 1 || len(summary.ErrorCounts) != 0 {
+		t.Fatalf("unexpected summary: %#v", summary)
+	}
+}

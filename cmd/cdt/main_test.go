@@ -182,3 +182,11 @@ func TestMainVersionPath(t *testing.T) {
 	os.Args = []string{"cdt", "version"}
 	main()
 }
+func TestDoctorReportsUnavailableChrome(t *testing.T) {
+	t.Setenv("CHROMEPROBE_CHROME", filepath.Join(t.TempDir(), "missing"))
+	t.Setenv("CHROMEPROBE_DATA_DIR", filepath.Join(t.TempDir(), "data"))
+	t.Setenv("CHROMEPROBE_NETLOG_DIR", filepath.Join(t.TempDir(), "netlogs"))
+	if err := runDoctor(); err != nil {
+		t.Fatal(err)
+	}
+}
