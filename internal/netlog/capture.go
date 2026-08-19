@@ -68,12 +68,16 @@ func Start(url string) (*Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create Chrome stdout log: %w", err)
 	}
-	defer stdout.Close()
+	defer func() {
+		_ = stdout.Close()
+	}()
 	stderr, err := os.OpenFile(session.StderrPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("create Chrome stderr log: %w", err)
 	}
-	defer stderr.Close()
+	defer func() {
+		_ = stderr.Close()
+	}()
 
 	result, err := chrome.Launch(chrome.LaunchConfig{
 		ProfileDir: profileDir, NetLogPath: session.NetLogPath, URL: url,
@@ -101,6 +105,7 @@ func ListSessions() ([]*Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read sessions directory: %w", err)
 	}
+
 	var sessions []*Session
 	for _, entry := range entries {
 		if !entry.IsDir() {

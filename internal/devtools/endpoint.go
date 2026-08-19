@@ -27,7 +27,9 @@ func Version(endpoint string) (*VersionInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("connect to DevTools endpoint: %w", err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		_ = response.Body.Close()
+	}()
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("DevTools endpoint returned %s", response.Status)
 	}

@@ -16,42 +16,46 @@ import (
 const version = "0.1.0"
 
 func main() {
-	if len(os.Args) < 2 {
-		printUsage()
-		os.Exit(1)
-	}
-
-	var err error
-	switch os.Args[1] {
-	case "netlog":
-		err = runNetLog(os.Args[2:])
-	case "ps":
-		err = runPS()
-	case "kill":
-		err = runKill(os.Args[2:])
-	case "sessions":
-		err = runSessions()
-	case "inspect":
-		err = runInspect(os.Args[2:])
-	case "doctor":
-		err = runDoctor()
-	case "clean":
-		err = runClean(os.Args[2:])
-	case "version", "--version", "-v":
-		fmt.Printf("cdt %s\n", version)
-		return
-	case "help", "--help", "-h":
-		printUsage()
-		return
-	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", os.Args[1])
-		printUsage()
-		os.Exit(1)
-	}
-	if err != nil {
+	if err := execute(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func execute(args []string) error {
+	if len(args) == 0 {
+		printUsage()
+		return fmt.Errorf("command is required")
+	}
+
+	var err error
+	switch args[0] {
+	case "netlog":
+		err = runNetLog(args[1:])
+	case "ps":
+		err = runPS()
+	case "kill":
+		err = runKill(args[1:])
+	case "sessions":
+		err = runSessions()
+	case "inspect":
+		err = runInspect(args[1:])
+	case "doctor":
+		err = runDoctor()
+	case "clean":
+		err = runClean(args[1:])
+	case "version", "--version", "-v":
+		fmt.Printf("cdt %s\n", version)
+		return nil
+	case "help", "--help", "-h":
+		printUsage()
+		return nil
+	default:
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[0])
+		printUsage()
+		return fmt.Errorf("unknown command: %s", args[0])
+	}
+	return err
 }
 
 func runNetLog(args []string) error {
@@ -149,7 +153,9 @@ func runInspect(args []string) error {
 	if err != nil {
 		return err
 	}
-	report.PrintSummary(os.Stdout, summary)
+	if err := report.PrintSummary(os.Stdout, summary); err != nil {
+		return fmt.Errorf("write report: %w", err)
+	}
 	return nil
 }
 

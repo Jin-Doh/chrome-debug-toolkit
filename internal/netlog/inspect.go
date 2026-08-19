@@ -33,7 +33,9 @@ func Inspect(target string) (*Summary, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open NetLog %s: %w", path, err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	decoder := json.NewDecoder(file)
 	token, err := decoder.Token()
