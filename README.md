@@ -18,6 +18,53 @@ go install github.com/jin-doh/chrome-debug-toolkit/cmd/cdt@latest
 go build -o cdt ./cmd/cdt
 ```
 
+## Install the latest release
+
+Release tags use semantic versioning with a `v` prefix. Pushing a tag such as
+`v0.1.0` runs the release pipeline, publishes archives and checksums, and
+updates the GitHub `latest` release:
+
+```bash
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+Install the matching prebuilt binary into `$HOME/.local/bin/`:
+
+```bash
+set -euo pipefail
+
+case "$(uname -s):$(uname -m)" in
+  Darwin:arm64)  asset="cdt-darwin-arm64.tar.gz" ;;
+  Darwin:x86_64) asset="cdt-darwin-amd64.tar.gz" ;;
+  Linux:aarch64) asset="cdt-linux-arm64.tar.gz" ;;
+  Linux:x86_64)  asset="cdt-linux-amd64.tar.gz" ;;
+  *) echo "Unsupported platform: $(uname -s):$(uname -m)" >&2; exit 1 ;;
+esac
+
+base="https://github.com/Jin-Doh/chrome-debug-toolkit/releases/latest/download"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+curl --fail --location --silent --show-error \
+  "$base/$asset" -o "$tmp/$asset"
+tar -xzf "$tmp/$asset" -C "$tmp"
+mkdir -p "$HOME/.local/bin"
+install -m 0755 "$tmp/cdt" "$HOME/.local/bin/cdt"
+```
+
+Ensure the install directory is on `PATH`:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+cdt version
+```
+
+Each release includes archives for macOS and Linux plus `checksums.txt`.
+The release pipeline retains the assets of the five most recent published
+releases and removes assets from older releases. Release records, tags, and
+release notes are preserved.
+
 ## Commands
 
 Start a capture browser. The command returns after Chrome starts, so leave that

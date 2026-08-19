@@ -1,6 +1,7 @@
 package netlog
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -56,5 +57,16 @@ func TestStartPropagatesStorageConfigurationErrors(t *testing.T) {
 	t.Setenv("CHROMEPROBE_NETLOG_DIR", netlogsFile)
 	if _, err := Start(""); err == nil {
 		t.Fatal("Start accepted a file as NetLog directory")
+	}
+}
+func TestStartCleansUpWhenMetadataPersistenceFails(t *testing.T) {
+	t.Setenv("CHROMEPROBE_DATA_DIR", filepath.Join(t.TempDir(), "data"))
+	t.Setenv("CHROMEPROBE_NETLOG_DIR", filepath.Join(t.TempDir(), "netlogs"))
+	t.Setenv("CHROMEPROBE_CHROME", writeFakeChrome(t))
+	original := persistSession
+	t.Cleanup(func() { persistSession = original })
+	persistSession = func(*Session) error { return errors.New("metadata write failed") }
+	if _, err := Start(""); err == nil {
+		t.Fatal("Start succeeded after metadata persistence failure")
 	}
 }
