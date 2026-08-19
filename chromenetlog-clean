@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+days="${1:-7}"
+if [[ "$days" == -* || ! "$days" =~ ^[0-9]+$ ]]; then
+    echo "retention days must be a non-negative integer: $days" >&2
+    exit 2
+fi
+
+if command -v cdt >/dev/null 2>&1; then
+    exec cdt clean "$days"
+fi
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "$script_dir/cdt" ]]; then
+    exec "$script_dir/cdt" clean "$days"
+fi
+
+echo "cdt was not found; install it with: go install github.com/jin-doh/chrome-debug-toolkit/cmd/cdt@latest" >&2
+exit 127

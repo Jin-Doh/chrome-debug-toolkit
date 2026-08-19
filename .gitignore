@@ -1,0 +1,18 @@
+# Local secrets and machine-specific shell configuration
+.zshrc
+.env
+.env.*
+
+# Generated knowledge graph and local build artifacts
+graphify-out/
+/cdt
+*.test
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Local smoke-test data
+.cdt-data/
+.cdt-netlogs/
