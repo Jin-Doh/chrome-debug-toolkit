@@ -17,7 +17,13 @@ type Process struct {
 	Managed bool
 }
 
+var processList = listProcesses
+
 func ListProcesses() ([]Process, error) {
+	return processList()
+}
+
+func listProcesses() ([]Process, error) {
 	profileDir, err := ManagedProfileDir()
 	if err != nil {
 		return nil, err

@@ -51,7 +51,7 @@ func DetectExecutable() (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Chrome executable not found; set CHROMEPROBE_CHROME")
+	return "", fmt.Errorf("chrome executable not found; set CHROMEPROBE_CHROME")
 }
 
 func isExecutable(path string) bool {

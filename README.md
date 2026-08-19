@@ -84,11 +84,22 @@ The repository keeps the existing habits as thin wrappers:
 
 They delegate to `cdt`; they do not contain a second Chrome implementation.
 
-## Development checks
+## Development quality gate
+
+The repository's local quality gate is:
 
 ```bash
 go fmt ./...
-go test ./...
+golangci-lint run ./...
 go vet ./...
+go test ./...
 go build ./...
+./scripts/check-coverage.sh
 ```
+
+`check-coverage.sh` runs the full test suite with an atomic coverage profile and
+fails below the project-wide 85% statement threshold. Set
+`COVERAGE_THRESHOLD` or `COVERAGE_PROFILE` to override the defaults for local
+experiments; CI uses the standard 85% threshold.
+
+`gopls` is an editor/LSP tool and is intentionally not a runtime dependency.

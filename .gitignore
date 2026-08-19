@@ -6,7 +6,7 @@
 # Generated knowledge graph and local build artifacts
 graphify-out/
 /cdt
-*.test
+coverage.out
 
 # OS/editor files
 .DS_Store

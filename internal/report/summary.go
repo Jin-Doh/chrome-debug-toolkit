@@ -18,17 +18,23 @@ type errorCount struct {
 	Count int
 }
 
-func PrintSummary(writer io.Writer, summary *netlog.Summary) {
+func PrintSummary(writer io.Writer, summary *netlog.Summary) error {
 	if summary == nil {
-		fmt.Fprintln(writer, "NetLog summary unavailable")
-		return
+		return writef(writer, "NetLog summary unavailable\n")
 	}
-	fmt.Fprintln(writer, "NetLog summary")
-	fmt.Fprintln(writer)
-	fmt.Fprintf(writer, "File:         %s\n", summary.Path)
-	fmt.Fprintf(writer, "Total events: %d\n", summary.TotalEvents)
+	if err := writef(writer, "NetLog summary\n\n"); err != nil {
+		return err
+	}
+	if err := writef(writer, "File:         %s\n", summary.Path); err != nil {
+		return err
+	}
+	if err := writef(writer, "Total events: %d\n", summary.TotalEvents); err != nil {
+		return err
+	}
 	if summary.UnknownEvents > 0 {
-		fmt.Fprintf(writer, "Unknown:      %d\n", summary.UnknownEvents)
+		if err := writef(writer, "Unknown:      %d\n", summary.UnknownEvents); err != nil {
+			return err
+		}
 	}
 
 	events := make([]eventCount, 0, len(summary.EventCounts))
@@ -42,9 +48,13 @@ func PrintSummary(writer io.Writer, summary *netlog.Summary) {
 		return events[i].Name < events[j].Name
 	})
 	if len(events) > 0 {
-		fmt.Fprintln(writer, "\nEvents")
+		if err := writef(writer, "\nEvents\n"); err != nil {
+			return err
+		}
 		for _, item := range events {
-			fmt.Fprintf(writer, "  %-32s %d\n", item.Name, item.Count)
+			if err := writef(writer, "  %-32s %d\n", item.Name, item.Count); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -59,9 +69,19 @@ func PrintSummary(writer io.Writer, summary *netlog.Summary) {
 		return errors[i].Code < errors[j].Code
 	})
 	if len(errors) > 0 {
-		fmt.Fprintln(writer, "\nErrors")
+		if err := writef(writer, "\nErrors\n"); err != nil {
+			return err
+		}
 		for _, item := range errors {
-			fmt.Fprintf(writer, "  %-8d %d\n", item.Code, item.Count)
+			if err := writef(writer, "  %-8d %d\n", item.Code, item.Count); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
+}
+
+func writef(writer io.Writer, format string, args ...interface{}) error {
+	_, err := fmt.Fprintf(writer, format, args...)
+	return err
 }
