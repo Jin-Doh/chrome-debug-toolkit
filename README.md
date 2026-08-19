@@ -18,18 +18,29 @@ go install github.com/jin-doh/chrome-debug-toolkit/cmd/cdt@latest
 go build -o cdt ./cmd/cdt
 ```
 
-## Install the latest release
+## Release and install
 
-Release tags use semantic versioning with a `v` prefix. Pushing a tag such as
-`v0.1.0` runs the release pipeline, publishes archives and checksums, and
-updates the GitHub `latest` release:
+### Publish a release
+
+Release tags use semantic versioning with a `v` prefix. Pushing a tag runs
+the release workflow, which validates the repository, builds four platform
+archives, publishes checksums, and updates the GitHub `latest` release:
 
 ```bash
-git tag -a v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
+VERSION=0.1.1
+git tag -a "v$VERSION" -m "Release v$VERSION"
+git push origin "v$VERSION"
 ```
 
-Install the matching prebuilt binary into `$HOME/.local/bin/`:
+The workflow retains the assets of the five most recent published releases.
+Older release records, tags, and notes remain available; only their assets are
+removed.
+
+### Install the latest release
+
+The installer detects the current platform, downloads the matching archive and
+`checksums.txt`, verifies the archive before extraction, and installs `cdt` to
+`$HOME/.local/bin/`:
 
 ```bash
 set -euo pipefail
@@ -48,12 +59,26 @@ trap 'rm -rf "$tmp"' EXIT
 
 curl --fail --location --silent --show-error \
   "$base/$asset" -o "$tmp/$asset"
+curl --fail --location --silent --show-error \
+  "$base/checksums.txt" -o "$tmp/checksums.txt"
+
+if command -v sha256sum >/dev/null 2>&1; then
+  actual="$(sha256sum "$tmp/$asset" | awk '{print $1}')"
+else
+  actual="$(shasum -a 256 "$tmp/$asset" | awk '{print $1}')"
+fi
+expected="$(awk -v asset="$asset" '$2 == asset { print $1; exit }' "$tmp/checksums.txt")"
+if [[ -z "$expected" || "$actual" != "$expected" ]]; then
+  echo "Checksum verification failed for $asset" >&2
+  exit 1
+fi
+
 tar -xzf "$tmp/$asset" -C "$tmp"
 mkdir -p "$HOME/.local/bin"
 install -m 0755 "$tmp/cdt" "$HOME/.local/bin/cdt"
 ```
 
-Ensure the install directory is on `PATH`:
+Add the install directory to `PATH` and verify the installed version:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
@@ -61,9 +86,6 @@ cdt version
 ```
 
 Each release includes archives for macOS and Linux plus `checksums.txt`.
-The release pipeline retains the assets of the five most recent published
-releases and removes assets from older releases. Release records, tags, and
-release notes are preserved.
 
 ## Commands
 
