@@ -36,6 +36,12 @@ function fail(message) {
     sub(/^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*/, "", line)
     sub(/[[:space:]#].*$/, "", line)
 
+    first = substr(line, 1, 1)
+    last = substr(line, length(line), 1)
+    if ((first == "\"" && last == "\"") || (first == "\047" && last == "\047")) {
+        line = substr(line, 2, length(line) - 2)
+    }
+
     at = index(line, "@")
     if (at == 0) {
         next
